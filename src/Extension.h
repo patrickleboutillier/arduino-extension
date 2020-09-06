@@ -1,5 +1,5 @@
 /*
-  Extension.h - Library for extending the capabilities of an Arduino other identical ones.
+  Extension.h - Library for extending the capabilities of an Arduino using other ones.
   Created by Patrick LeBoutillier, September 2020.
 */
 #ifndef Extension_h
@@ -18,7 +18,7 @@
 class Extension {
   public:
     Extension(byte slave) ;
-    static void slave(byte ic2addr) ;
+    static void slave(byte i2caddr) ;
     void pinMode(byte pin, byte mode) ;
     int digitalRead(byte pin) ;
     void digitalWrite(byte pin, byte value) ;

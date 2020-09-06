@@ -5,7 +5,7 @@ Extension use the Wire library under the hood to send messages to the different 
 # How To Use #
 
 # 1- Program your slaves #
-Each slave device must be programmed using a unique id (i.e. IC2 address). Here is what you slave code should look like:
+Each slave device must be programmed using a unique id (i.e. I2C address). Here is what you slave code should look like:
 
 ````
 #include "Extension.h"
@@ -19,7 +19,7 @@ void loop(){
 ````
 
 # 2- Wire your setup
-Devices must be wired to create and IC2 bus. Here is an example using 2 slaves:
+Devices must be wired to create and I2C bus. Here is an example using 2 slaves:
 
 ![](./examples/Extension.png)
 

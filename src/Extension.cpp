@@ -1,5 +1,5 @@
 /*
-  Extension.cpp - Library for extending the capabilities of an Arduino other identical ones.
+  Extension.cpp - Library for extending the capabilities of an Arduino using other ones.
   Created by Patrick LeBoutillier, September 2020.
 */
 
@@ -9,7 +9,7 @@
 #include "Extension.h"
 
 
-byte BUFFER[8] ;
+byte BUFFER[2] ;
 byte BUFFER_LEN = 0 ;
 byte MASTER_BEGIN = 0 ;
 
@@ -126,8 +126,8 @@ void Extension::analogWrite(byte pin, int value) {
 }
 
 // Used by a slave
-static void Extension::slave(byte ic2addr){
-  Wire.begin(ic2addr) ;
+static void Extension::slave(byte i2caddr){
+  Wire.begin(i2caddr) ;
   Wire.onReceive(_extension_on_recv) ;
   Wire.onRequest(_extension_on_req) ;
 }
