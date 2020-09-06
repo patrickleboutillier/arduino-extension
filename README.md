@@ -1,7 +1,8 @@
-# arduino-extension
+# Extension
 Library for extending the capabilities of an Arduino with other identical ones. 
+Extension use the Wire library under the hood to send messages to the different devices.
 
-# How To #
+# How To Use #
 
 # 1- Program your slaves #
 Each slave device must be programmed using a unique id (i.e. IC2 address). Here is what you slave code should look like:
@@ -38,7 +39,6 @@ void setup(){
   sl2.pinMode(2, INPUT) ;
 }
 
-
 void loop(){
   byte v = sl1.digitalRead(2) ;
   Serial.print("Pin 2 of slave 1 is: ") ;
@@ -50,3 +50,11 @@ void loop(){
   // ...
 }
 ````
+
+# Reference #
+Extension supports the following methods that aim to behave exactly like their native Arduino counterparts:
+- pinMode(PIN, MODE)
+- VALUE = digitalRead(PIN)
+- digitalWrite(PIN, VALUE)
+- VALUE = analogRead(PIN)
+- analogWrite(PIN, VALUE)
