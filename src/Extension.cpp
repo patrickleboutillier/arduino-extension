@@ -16,13 +16,13 @@ byte MASTER_BEGIN = 0 ;
 
 // When slave receives request
 void _extension_on_recv(int nb){
-  int cmd = Wire.read() ;
+  byte cmd = Wire.read() ;
   if (cmd & B10000000){
     // Optimized digital operation
-    byte pin = cmd & B00111111 ;
+    byte pin = cmd & B00011111 ;
     if (cmd & B01000000){
       // Digital write
-      byte value = Wire.read() ;
+      byte value = (cmd & B00100000) >> 5 ;
       digitalWrite(pin, value) ;
     } 
     else {
@@ -99,8 +99,7 @@ int Extension::digitalRead(byte pin) {
 
 void Extension::digitalWrite(byte pin, byte value) {
   Wire.beginTransmission(_slave) ;
-  Wire.write(B11000000 | pin) ;
-  Wire.write(value) ;
+  Wire.write(B11000000 | (value << 5) | pin) ;
   Wire.endTransmission() ;
 }
 
