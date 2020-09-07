@@ -47,8 +47,8 @@ void _extension_on_recv(int nb){
     }
     case ANALOG_W: {
       byte pin = Wire.read() ;
-      byte value1 = Wire.read() ;
-      byte value2 = Wire.read() ;
+      int value1 = Wire.read() ;
+      int value2 = Wire.read() ;
       analogWrite(pin, (value1 << 4) | value2) ;
       break ;
     }
@@ -109,8 +109,8 @@ int Extension::analogRead(byte pin) {
   Wire.write(pin) ;
   Wire.endTransmission() ;
   Wire.requestFrom(_slave, (byte)2) ;
-  byte value1 = Wire.read() ;
-  byte value2 = Wire.read() ;
+  int value1 = Wire.read() ;
+  int value2 = Wire.read() ;
 
   return (value1 << 4) | value2 ;
 }
