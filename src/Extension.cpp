@@ -17,28 +17,25 @@ byte MASTER_BEGIN = 0 ;
 // When slave receives request
 void _extension_on_recv(int nb){
   byte cmd = Wire.read() ;
+  byte pin = Wire.read() ;
   switch (cmd) {
     case PINMODE: {
-      byte pin = Wire.read() ;
       byte mode = Wire.read() ;
       pinMode(pin, mode) ;
       break ;
     }
     case DIGITAL_R: {
-      byte pin = Wire.read() ;
       byte value = digitalRead(pin) ;
       BUFFER[0] = value ;
       BUFFER_LEN = 1 ;
       break ;
     }
     case DIGITAL_W: {
-      byte pin = Wire.read() ;
       byte value = Wire.read() ;
       digitalWrite(pin, value) ;
       break ;
     }
     case ANALOG_R: {
-      byte pin = Wire.read() ;
       int value = analogRead(pin) ;
       BUFFER[0] = value >> 4 ;
       BUFFER[1] = value & 0x0F ;
@@ -46,7 +43,6 @@ void _extension_on_recv(int nb){
       break ;
     }
     case ANALOG_W: {
-      byte pin = Wire.read() ;
       int value1 = Wire.read() ;
       int value2 = Wire.read() ;
       analogWrite(pin, (value1 << 4) | value2) ;
@@ -73,6 +69,15 @@ Extension::Extension(byte slave){
   }
   
   _slave = slave ;
+  _digital_pin_value_cache = NULL ;
+}
+
+
+void Extension::enableDigitalCache(){
+  _digital_pin_value_cache = malloc(MAX_PIN) ;
+  for (byte i = 0 ; i < MAX_PIN ; i++){
+    _digital_pin_value_cache[i] = 255 ;
+  }
 }
 
 
@@ -96,11 +101,14 @@ int Extension::digitalRead(byte pin) {
 
 
 void Extension::digitalWrite(byte pin, byte value) {
-  Wire.beginTransmission(_slave) ;
-  Wire.write(DIGITAL_W) ;
-  Wire.write(pin) ;
-  Wire.write(value) ;
-  Wire.endTransmission() ;
+  if ((_digital_pin_value_cache == NULL)||(_digital_pin_value_cache[pin] != value)){
+    Wire.beginTransmission(_slave) ;
+    Wire.write(DIGITAL_W) ;
+    Wire.write(pin) ;
+    Wire.write(value) ;
+    Wire.endTransmission() ;
+    _digital_pin_value_cache[pin] = value ; 
+  }
 }
 
 

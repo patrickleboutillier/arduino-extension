@@ -15,6 +15,8 @@
 #define ANALOG_R    4
 #define ANALOG_W    5
 
+#define MAX_PIN     32
+
 
 class Extension {
   public:
@@ -25,8 +27,10 @@ class Extension {
     void digitalWrite(byte pin, byte value) ;
     int analogRead(byte pin) ;
     void analogWrite(byte pin, int value) ;
+    void enableDigitalCache() ;
   private:
     byte _slave ;
+    byte *_digital_pin_value_cache ;
 } ;
 
 
