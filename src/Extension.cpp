@@ -25,7 +25,7 @@ void _extension_on_recv(int nb){
       byte value = Wire.read() ;
       digitalWrite(pin, value) ;
     } 
-    else
+    else {
       // Digital read
       byte value = digitalRead(pin) ;
       BUFFER[0] = value ;
