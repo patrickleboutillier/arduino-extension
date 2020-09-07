@@ -10,6 +10,8 @@
 
 
 #define PINMODE     1
+#define DIGITAL_R   2
+#define DIGITAL_W   3
 #define ANALOG_R    4
 #define ANALOG_W    5
 
