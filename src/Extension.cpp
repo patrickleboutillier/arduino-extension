@@ -14,6 +14,7 @@ void _extension_on_recv(int nb) ;
 void _extension_on_req() ;
 
 
+// Buffer to store return values
 byte BUFFER[2] ;
 byte BUFFER_LEN = 0 ;
 byte MASTER_BEGIN = 0 ;
