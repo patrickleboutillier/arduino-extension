@@ -15,12 +15,12 @@
 #define ANALOG_R    4
 #define ANALOG_W    5
 
-#define MAX_PIN     32
+#define MAX_PIN     128
 
 
 class Extension {
   public:
-    Extension(byte slave) ;
+    Extension(byte slave, byte max_pin = MAX_PIN) ;
     static void slave(byte i2caddr) ;
     void pinMode(byte pin, byte mode) ;
     int digitalRead(byte pin) ;
@@ -28,9 +28,12 @@ class Extension {
     int analogRead(byte pin) ;
     void analogWrite(byte pin, int value) ;
     void enableDigitalCache() ;
+    void enableAnalogCache() ;
   private:
     byte _slave ;
+    byte _max_pin ;
     byte *_digital_pin_value_cache ;
+    int *_analog_pin_value_cache ;
 } ;
 
 
