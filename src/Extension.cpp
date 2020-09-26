@@ -85,7 +85,9 @@ void Extension::digitalWrite(byte pin, byte value) {
     Wire.write(pin) ;
     Wire.write(value) ;
     Wire.endTransmission() ;
-    _digital_pin_value_cache[pin] = value ; 
+    if (_digital_pin_value_cache != NULL){
+      _digital_pin_value_cache[pin] = value ; 
+    }
   }
 }
 
@@ -111,6 +113,9 @@ void Extension::analogWrite(byte pin, int value) {
     Wire.write(value >> 4) ;
     Wire.write(value & 0x0F) ;
     Wire.endTransmission() ;
+    if (_analog_pin_value_cache != NULL){
+      _analog_pin_value_cache[pin] = value ; 
+    }
   }
 }
 
