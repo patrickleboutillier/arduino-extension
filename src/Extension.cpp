@@ -12,12 +12,16 @@
 // Pre-declare some function prototypes.
 void _extension_on_recv(int nb) ;
 void _extension_on_req() ;
+byte _read_byte() ;
+void _process_request() ;
 
 
 // Buffer to store return values
-byte BUFFER[2] ;
-byte BUFFER_LEN = 0 ;
-byte MASTER_BEGIN = 0 ;
+volatile byte REQBUF[8] ;
+volatile byte REQBUF_LEN = 0 ;
+volatile byte RESPBUF[8] ;
+volatile byte RESPBUF_LEN = 0 ;
+bool MASTER_BEGIN = false ;
 
 
 // Used by the master
@@ -25,7 +29,7 @@ Extension::Extension(byte slave, byte max_pin = MAX_PIN){
   if (! MASTER_BEGIN){
     Wire.begin() ;
     Wire.setClock(400000) ;
-    MASTER_BEGIN = 1 ;
+    MASTER_BEGIN = true ;
   }
   
   _slave = slave ;
@@ -40,6 +44,12 @@ static void Extension::slave(byte i2caddr){
   Wire.begin(i2caddr) ;
   Wire.onReceive(_extension_on_recv) ;
   Wire.onRequest(_extension_on_req) ;
+}
+
+
+// Used by a slave
+static void Extension::loop(){
+  _process_request() ;
 }
 
 
@@ -73,8 +83,21 @@ int Extension::digitalRead(byte pin) {
   Wire.write(DIGITAL_R) ;
   Wire.write(pin) ;
   Wire.endTransmission() ;
+  delay(1) ;
   Wire.requestFrom(_slave, (byte)1) ;
-  return Wire.read() ;
+  return _read_byte() ;
+}
+
+
+int Extension::digitalReadN(byte start_pin, byte nb_pins, bool up_down) {
+  Wire.beginTransmission(_slave) ;
+  Wire.write(DIGITAL_RN) ;
+  Wire.write(start_pin) ;
+  Wire.write((nb_pins & 0x7F) | (up_down < 0 ? 0x00 : 0x80)) ;
+  Wire.endTransmission() ;
+  delay(1) ;
+  Wire.requestFrom(_slave, (byte)1) ;
+  return _read_byte() ;
 }
 
 
@@ -97,9 +120,10 @@ int Extension::analogRead(byte pin) {
   Wire.write(ANALOG_R) ;
   Wire.write(pin) ;
   Wire.endTransmission() ;
+  delay(1) ;
   Wire.requestFrom(_slave, (byte)2) ;
-  int value1 = Wire.read() ;
-  int value2 = Wire.read() ;
+  int value1 = _read_byte() ;
+  int value2 = _read_byte() ;
 
   return (value1 << 4) | value2 ;
 }
@@ -122,50 +146,92 @@ void Extension::analogWrite(byte pin, int value) {
 
 // When slave receives request
 void _extension_on_recv(int nb){
-  byte cmd = Wire.read() ;
-  byte pin = Wire.read() ;
-  switch (cmd) {
-    case PINMODE: {
-      byte mode = Wire.read() ;
-      pinMode(pin, mode) ;
-      break ;
-    }
-    case DIGITAL_R: {
-      byte value = digitalRead(pin) ;
-      BUFFER[0] = value ;
-      BUFFER_LEN = 1 ;
-      break ;
-    }
-    case DIGITAL_W: {
-      byte value = Wire.read() ;
-      digitalWrite(pin, value) ;
-      break ;
-    }
-    case ANALOG_R: {
-      int value = analogRead(pin) ;
-      BUFFER[0] = value >> 4 ;
-      BUFFER[1] = value & 0x0F ;
-      BUFFER_LEN = 2 ;
-      break ;
-    }
-    case ANALOG_W: {
-      int value1 = Wire.read() ;
-      int value2 = Wire.read() ;
-      analogWrite(pin, (value1 << 4) | value2) ;
-      break ;
-    }
+  for (byte i = 0 ; i < nb ; i++){
+    REQBUF[i] = _read_byte() ;
   }
+  REQBUF_LEN = nb ;
 }
 
 
 // When slave sends response
 void _extension_on_req(){
-  for (byte i = 0 ; i < BUFFER_LEN ; i++){
-    Wire.write(BUFFER[i]) ;
+  if (RESPBUF_LEN){
+    for (byte i = 0 ; i < RESPBUF_LEN ; i++){
+      Wire.write(RESPBUF[i]) ;
+    }
+    RESPBUF_LEN = 0 ;
   }
 }
 
 
+byte _read_byte(){
+  while (Wire.available() < 1){}
+  return Wire.read() ;
+}
+
+
+void _process_request(){
+  if (! REQBUF_LEN){
+    return ;
+  }
+
+  byte cmd = REQBUF[0] ;
+  byte pin = REQBUF[1] ;
+  switch (cmd) {
+    case PINMODE: {
+      byte mode = REQBUF[2] ;
+      pinMode(pin, mode) ;
+      break ;
+    }
+    case DIGITAL_R: {
+      byte value = digitalRead(pin) ;
+      RESPBUF[0] = value ;
+      RESPBUF_LEN = 1 ;
+      break ;
+    }
+    case DIGITAL_RN: {
+      byte n = REQBUF[2] ;
+      bool up = n & 0x80 ;
+      n = n & 0x7F ;
+      byte value = 0 ;
+
+      if (up){
+        for (byte i = pin ; i < pin + n ; i++){
+          bool b = digitalRead(i) ;
+          value = value << 1 | b ;
+        }
+      }
+      else {  // down
+        for (byte i = pin ; i > pin - n ; i--){
+          bool b = digitalRead(i) ;
+          value = value << 1 | b ;
+        }        
+      }
+      
+      RESPBUF[0] = value ;
+      RESPBUF_LEN = 1 ;
+      break ;
+    }
+    case DIGITAL_W: {
+      byte value = REQBUF[2] ;
+      digitalWrite(pin, value) ;
+      break ;
+    }
+    case ANALOG_R: {
+      int value = analogRead(pin) ;
+      RESPBUF[0] = value >> 4 ;
+      RESPBUF[1] = value & 0x0F ;
+      RESPBUF_LEN = 2 ;
+      break ;
+    }
+    case ANALOG_W: {
+      int value1 = REQBUF[2] ;
+      int value2 = REQBUF[3] ;
+      analogWrite(pin, (value1 << 4) | value2) ;
+      break ;
+    }
+  }
+}
 
 
 

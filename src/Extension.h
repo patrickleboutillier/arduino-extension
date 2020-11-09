@@ -11,9 +11,10 @@
 
 #define PINMODE     1
 #define DIGITAL_R   2
-#define DIGITAL_W   3
-#define ANALOG_R    4
-#define ANALOG_W    5
+#define DIGITAL_RN  3
+#define DIGITAL_W   4
+#define ANALOG_R    5
+#define ANALOG_W    6
 
 #define MAX_PIN     128
 
@@ -22,8 +23,10 @@ class Extension {
   public:
     Extension(byte slave, byte max_pin = MAX_PIN) ;
     static void slave(byte i2caddr) ;
+    static void loop() ;
     void pinMode(byte pin, byte mode) ;
     int digitalRead(byte pin) ;
+    int digitalReadN(byte start_pin, byte nb_pins, bool up_down) ;
     void digitalWrite(byte pin, byte value) ;
     int analogRead(byte pin) ;
     void analogWrite(byte pin, int value) ;
