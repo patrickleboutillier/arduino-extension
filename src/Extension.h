@@ -26,8 +26,9 @@ class Extension {
     static void loop() ;
     void pinMode(byte pin, byte mode) ;
     int digitalRead(byte pin) ;
-    int digitalReadN(byte start_pin, byte nb_pins, bool up_down) ;
+    int digitalReadN(byte start_pin, byte nb_pins, int up_down = 0) ;
     void digitalWrite(byte pin, byte value) ;
+    void digitalWriteN(byte start_pin, byte nb_pins, byte value, int up_down = 0) ;
     int analogRead(byte pin) ;
     void analogWrite(byte pin, int value) ;
     void enableDigitalCache() ;

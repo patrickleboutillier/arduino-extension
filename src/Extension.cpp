@@ -89,7 +89,7 @@ int Extension::digitalRead(byte pin) {
 }
 
 
-int Extension::digitalReadN(byte start_pin, byte nb_pins, bool up_down) {
+int Extension::digitalReadN(byte start_pin, byte nb_pins, int up_down = 0) {
   Wire.beginTransmission(_slave) ;
   Wire.write(DIGITAL_RN) ;
   Wire.write(start_pin) ;
