@@ -89,18 +89,6 @@ int Extension::digitalRead(byte pin) {
 }
 
 
-int Extension::digitalReadN(byte start_pin, byte nb_pins, int up_down = 0) {
-  Wire.beginTransmission(_slave) ;
-  Wire.write(DIGITAL_RN) ;
-  Wire.write(start_pin) ;
-  Wire.write((nb_pins & 0x7F) | (up_down < 0 ? 0x00 : 0x80)) ;
-  Wire.endTransmission() ;
-  delay(1) ;
-  Wire.requestFrom(_slave, (byte)1) ;
-  return _read_byte() ;
-}
-
-
 void Extension::digitalWrite(byte pin, byte value) {
   if ((_digital_pin_value_cache == NULL)||(_digital_pin_value_cache[pin] != value)){
     Wire.beginTransmission(_slave) ;
