@@ -25,13 +25,14 @@ class Extension {
     static void slave(byte i2caddr) ;
     static void loop() ;
     void pinMode(byte pin, byte mode) ;
-    int digitalRead(byte pin) ;
-    void digitalWrite(byte pin, byte value) ;
+    bool digitalRead(byte pin) ;
+    void digitalWrite(byte pin, bool value) ;
     int analogRead(byte pin) ;
     void analogWrite(byte pin, int value) ;
     void enableDigitalCache() ;
     void enableAnalogCache() ;
   private:
+    void wait() ;
     byte _slave ;
     byte _max_pin ;
     byte *_digital_pin_value_cache ;

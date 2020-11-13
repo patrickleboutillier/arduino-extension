@@ -64,8 +64,13 @@ void Extension::enableDigitalCache(){
 void Extension::enableAnalogCache(){
   _analog_pin_value_cache = malloc(_max_pin * sizeof(int)) ;
   for (byte i = 0 ; i < MAX_PIN ; i++){
-    _analog_pin_value_cache[i] = 255 ;
+    _analog_pin_value_cache[i] = -1 ;
   }
+}
+
+
+void Extension::wait(){
+  delay(5) ;
 }
 
 
@@ -74,28 +79,30 @@ void Extension::pinMode(byte pin, byte mode) {
   Wire.write(PINMODE) ;
   Wire.write(pin) ;
   Wire.write(mode) ;
+  wait() ;
   Wire.endTransmission() ;
 }
 
 
-int Extension::digitalRead(byte pin) {
+bool Extension::digitalRead(byte pin) {
   Wire.beginTransmission(_slave) ;
   Wire.write(DIGITAL_R) ;
   Wire.write(pin) ;
   Wire.endTransmission() ;
-  delay(1) ;
+  wait() ;
   Wire.requestFrom(_slave, (byte)1) ;
-  return _read_byte() ;
+  return (bool)_read_byte() ;
 }
 
 
-void Extension::digitalWrite(byte pin, byte value) {
+void Extension::digitalWrite(byte pin, bool value) {
   if ((_digital_pin_value_cache == NULL)||(_digital_pin_value_cache[pin] != value)){
     Wire.beginTransmission(_slave) ;
     Wire.write(DIGITAL_W) ;
     Wire.write(pin) ;
     Wire.write(value) ;
     Wire.endTransmission() ;
+    wait() ;
     if (_digital_pin_value_cache != NULL){
       _digital_pin_value_cache[pin] = value ; 
     }
@@ -108,7 +115,7 @@ int Extension::analogRead(byte pin) {
   Wire.write(ANALOG_R) ;
   Wire.write(pin) ;
   Wire.endTransmission() ;
-  delay(1) ;
+  wait() ;
   Wire.requestFrom(_slave, (byte)2) ;
   int value1 = _read_byte() ;
   int value2 = _read_byte() ;
@@ -125,6 +132,7 @@ void Extension::analogWrite(byte pin, int value) {
     Wire.write(value >> 4) ;
     Wire.write(value & 0x0F) ;
     Wire.endTransmission() ;
+    wait() ;
     if (_analog_pin_value_cache != NULL){
       _analog_pin_value_cache[pin] = value ; 
     }
