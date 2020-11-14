@@ -28,7 +28,6 @@ bool MASTER_BEGIN = false ;
 Extension::Extension(byte slave, byte max_pin = MAX_PIN){
   if (! MASTER_BEGIN){
     Wire.begin() ;
-    Wire.setClock(400000) ;
     MASTER_BEGIN = true ;
   }
   
@@ -44,12 +43,6 @@ static void Extension::slave(byte i2caddr){
   Wire.begin(i2caddr) ;
   Wire.onReceive(_extension_on_recv) ;
   Wire.onRequest(_extension_on_req) ;
-}
-
-
-// Used by a slave
-static void Extension::loop(){
-  _process_request() ;
 }
 
 
@@ -102,7 +95,7 @@ void Extension::digitalWrite(byte pin, bool value) {
     Wire.write(pin) ;
     Wire.write(value) ;
     Wire.endTransmission() ;
-    wait() ;
+    wait() ;   
     if (_digital_pin_value_cache != NULL){
       _digital_pin_value_cache[pin] = value ; 
     }
@@ -146,6 +139,7 @@ void _extension_on_recv(int nb){
     REQBUF[i] = _read_byte() ;
   }
   REQBUF_LEN = nb ;
+  _process_request() ;
 }
 
 
@@ -167,10 +161,6 @@ byte _read_byte(){
 
 
 void _process_request(){
-  if (! REQBUF_LEN){
-    return ;
-  }
-
   byte cmd = REQBUF[0] ;
   byte pin = REQBUF[1] ;
   switch (cmd) {
@@ -181,29 +171,6 @@ void _process_request(){
     }
     case DIGITAL_R: {
       byte value = digitalRead(pin) ;
-      RESPBUF[0] = value ;
-      RESPBUF_LEN = 1 ;
-      break ;
-    }
-    case DIGITAL_RN: {
-      byte n = REQBUF[2] ;
-      bool up = n & 0x80 ;
-      n = n & 0x7F ;
-      byte value = 0 ;
-
-      if (up){
-        for (byte i = pin ; i < pin + n ; i++){
-          bool b = digitalRead(i) ;
-          value = value << 1 | b ;
-        }
-      }
-      else {  // down
-        for (byte i = pin ; i > pin - n ; i--){
-          bool b = digitalRead(i) ;
-          value = value << 1 | b ;
-        }        
-      }
-      
       RESPBUF[0] = value ;
       RESPBUF_LEN = 1 ;
       break ;

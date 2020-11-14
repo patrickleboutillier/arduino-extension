@@ -11,10 +11,9 @@
 
 #define PINMODE     1
 #define DIGITAL_R   2
-#define DIGITAL_RN  3
-#define DIGITAL_W   4
-#define ANALOG_R    5
-#define ANALOG_W    6
+#define DIGITAL_W   3
+#define ANALOG_R    4
+#define ANALOG_W    5
 
 #define MAX_PIN     128
 
