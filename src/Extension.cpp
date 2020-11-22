@@ -25,12 +25,19 @@ bool MASTER_BEGIN = false ;
 
 
 // Used by the master
-Extension::Extension(byte slave, byte max_pin = MAX_PIN){
+Extension::Extension(byte slave, const char *name = NULL, byte max_pin = MAX_PIN){
   if (! MASTER_BEGIN){
     Wire.begin() ;
+    Wire.setClock(400000) ;
     MASTER_BEGIN = true ;
   }
   
+  _name[0] = '\0' ;
+  if (name != NULL){
+    strncpy(_name, name, 15) ;
+    _name[15] = '\0' ;
+  }
+
   _slave = slave ;
   _max_pin = max_pin ;
   _digital_pin_value_cache = NULL ;
@@ -43,6 +50,20 @@ static void Extension::slave(byte i2caddr){
   Wire.begin(i2caddr) ;
   Wire.onReceive(_extension_on_recv) ;
   Wire.onRequest(_extension_on_req) ;
+}
+
+
+// Used to check if a slave is alive. 
+const char *Extension::name(){
+  return _name ;
+}
+
+
+// Used to check if a slave is alive. 
+bool Extension::ping(){
+  Wire.beginTransmission(_slave) ;
+  byte error = Wire.endTransmission() ;
+  return !error ;
 }
 
 
@@ -63,7 +84,7 @@ void Extension::enableAnalogCache(){
 
 
 void Extension::wait(){
-  delay(5) ;
+  delay(1) ;
 }
 
 
