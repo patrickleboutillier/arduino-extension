@@ -84,7 +84,7 @@ void Extension::enableAnalogCache(){
 
 
 void Extension::wait(){
-  delay(1) ;
+  // delay(1) ;
 }
 
 
