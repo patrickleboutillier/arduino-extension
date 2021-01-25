@@ -53,6 +53,12 @@ void loop(){
 }
 ````
 
+
+## 4- How to install
+* Download the latest release: https://github.com/patrickleboutillier/arduino-extension/releases
+* Follow the Arduino IDE installation instructions: https://www.arduino.cc/en/guide/libraries
+
+
 # Reference #
 Extension supports the following methods that aim to behave exactly like their native Arduino counterparts:
 - pinMode(PIN, MODE)
