@@ -14,6 +14,7 @@
 #define DIGITAL_W   3
 #define ANALOG_R    4
 #define ANALOG_W    5
+#define PGM_READ    6
 
 #define MAX_PIN     32
 
@@ -21,13 +22,14 @@
 class Extension {
   public:
     Extension(byte slave, const char *name = NULL, byte max_pin = MAX_PIN) ;
-    static void slave(byte i2caddr) ;
+    static void slave(byte i2caddr, byte *pgm_data = NULL) ;
     static void loop() ;
     void pinMode(byte pin, byte mode) ;
     bool digitalRead(byte pin) ;
     void digitalWrite(byte pin, bool value) ;
     int analogRead(byte pin) ;
     void analogWrite(byte pin, int value) ;
+    byte pgm_read_byte_(int addr) ;
     void enableDigitalCache() ;
     void enableAnalogCache() ;
     bool ping() ;

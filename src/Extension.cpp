@@ -21,11 +21,12 @@ volatile byte REQBUF[8] ;
 volatile byte REQBUF_LEN = 0 ;
 volatile byte RESPBUF[8] ;
 volatile byte RESPBUF_LEN = 0 ;
+byte *PGM_DATA = NULL ;
 bool MASTER_BEGIN = false ;
 
 
 // Used by the master
-Extension::Extension(byte slave, const char *name = NULL, byte max_pin = MAX_PIN){
+Extension::Extension(byte slave, const char *name, byte max_pin){
   if (! MASTER_BEGIN){
     Wire.begin() ;
     Wire.setClock(400000) ;
@@ -46,7 +47,8 @@ Extension::Extension(byte slave, const char *name = NULL, byte max_pin = MAX_PIN
 
 
 // Used by a slave
-static void Extension::slave(byte i2caddr){
+void Extension::slave(byte i2caddr, byte *pgm_data){
+  PGM_DATA = pgm_data ;
   Wire.begin(i2caddr) ;
   Wire.onReceive(_extension_on_recv) ;
   Wire.onRequest(_extension_on_req) ;
@@ -68,7 +70,7 @@ bool Extension::ping(){
 
 
 void Extension::enableDigitalCache(){
-  _digital_pin_value_cache = malloc(_max_pin * sizeof(byte)) ;
+  _digital_pin_value_cache = (byte *)malloc(_max_pin * sizeof(byte)) ;
   for (byte i = 0 ; i < MAX_PIN ; i++){
     _digital_pin_value_cache[i] = 255 ;
   }
@@ -76,7 +78,7 @@ void Extension::enableDigitalCache(){
 
 
 void Extension::enableAnalogCache(){
-  _analog_pin_value_cache = malloc(_max_pin * sizeof(int)) ;
+  _analog_pin_value_cache = (int *)malloc(_max_pin * sizeof(int)) ;
   for (byte i = 0 ; i < MAX_PIN ; i++){
     _analog_pin_value_cache[i] = -1 ;
   }
@@ -143,14 +145,29 @@ void Extension::analogWrite(byte pin, int value) {
     Wire.beginTransmission(_slave) ;
     Wire.write(ANALOG_W) ;
     Wire.write(pin) ;
-    Wire.write(value >> 4) ;
-    Wire.write(value & 0x0F) ;
+    Wire.write(value >> 8) ;
+    Wire.write(value & 0xFF) ;
     Wire.endTransmission() ;
     wait() ;
     if (_analog_pin_value_cache != NULL){
       _analog_pin_value_cache[pin] = value ; 
     }
   }
+}
+
+
+byte Extension::pgm_read_byte_(int addr) {
+  Wire.beginTransmission(_slave) ;
+  Wire.write(PGM_READ) ;
+  Wire.write(0) ; // pin
+  Wire.write(addr >> 8) ;
+  Wire.write(addr & 0xFF) ;
+  Wire.endTransmission() ;
+  wait() ;
+  Wire.requestFrom(_slave, (byte)2) ;
+  int data = _read_byte() ;
+
+  return data ;
 }
 
 
@@ -203,8 +220,8 @@ void _process_request(){
     }
     case ANALOG_R: {
       int value = analogRead(pin) ;
-      RESPBUF[0] = value >> 4 ;
-      RESPBUF[1] = value & 0x0F ;
+      RESPBUF[0] = value >> 8 ;
+      RESPBUF[1] = value & 0xFF ;
       RESPBUF_LEN = 2 ;
       break ;
     }
@@ -212,6 +229,17 @@ void _process_request(){
       int value1 = REQBUF[2] ;
       int value2 = REQBUF[3] ;
       analogWrite(pin, (value1 << 4) | value2) ;
+      break ;
+    }
+    case PGM_READ: {
+      byte data = 0 ;
+      if (PGM_DATA != NULL){
+        byte addrh = REQBUF[2] ;
+        byte addrl = REQBUF[3] ;
+        data = pgm_read_byte(PGM_DATA + (addrh << 8 | addrl)) ;
+      }
+      RESPBUF[0] = data ;
+      RESPBUF_LEN = 1 ;
       break ;
     }
   }
