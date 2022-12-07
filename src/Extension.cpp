@@ -21,7 +21,7 @@ volatile byte REQBUF[8] ;
 volatile byte REQBUF_LEN = 0 ;
 volatile byte RESPBUF[8] ;
 volatile byte RESPBUF_LEN = 0 ;
-byte *PGM_DATA = NULL ;
+const byte *PGM_DATA = NULL ;
 bool MASTER_BEGIN = false ;
 
 
@@ -47,7 +47,7 @@ Extension::Extension(byte slave, const char *name, byte max_pin){
 
 
 // Used by a slave
-void Extension::slave(byte i2caddr, byte *pgm_data){
+void Extension::slave(byte i2caddr, const byte *pgm_data){
   PGM_DATA = pgm_data ;
   Wire.begin(i2caddr) ;
   Wire.onReceive(_extension_on_recv) ;

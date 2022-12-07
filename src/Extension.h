@@ -22,7 +22,7 @@
 class Extension {
   public:
     Extension(byte slave, const char *name = NULL, byte max_pin = MAX_PIN) ;
-    static void slave(byte i2caddr, byte *pgm_data = NULL) ;
+    static void slave(byte i2caddr, const byte *pgm_data = NULL) ;
     static void loop() ;
     void pinMode(byte pin, byte mode) ;
     bool digitalRead(byte pin) ;
