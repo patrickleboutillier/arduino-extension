@@ -156,7 +156,7 @@ void Extension::analogWrite(byte pin, int value) {
 }
 
 
-byte Extension::pgm_read_byte_(int addr) {
+byte Extension::pgm_read_byte_(unsigned int addr) {
   Wire.beginTransmission(_slave) ;
   Wire.write(PGM_READ) ;
   Wire.write(0) ; // pin

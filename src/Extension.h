@@ -29,7 +29,7 @@ class Extension {
     void digitalWrite(byte pin, bool value) ;
     int analogRead(byte pin) ;
     void analogWrite(byte pin, int value) ;
-    byte pgm_read_byte_(int addr) ;
+    byte pgm_read_byte_(unsigned int addr) ;
     void enableDigitalCache() ;
     void enableAnalogCache() ;
     bool ping() ;
